@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Прайс-лист</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     ТОКЕНЫ
+     — Telegram-переменные подтягиваются скриптом ниже и
+       переопределяют часть значений (--paper, --ink, --hint...).
+     — Декоративные акценты (арты/чиби/vtuber) не зависят от темы,
+       но яркость чуть гасится в тёмном режиме через .dark
+     ========================================================= */
+  :root{
+    --paper:      #FAF6F0;
+    --paper-soft: #F1EBE0;
+    --ink:        #2B2530;
+    --hint:       #8A8290;
+    --line:       rgba(43,37,48,0.12);
+
+    --accent-art:    #E2566F;
+    --accent-chibi:  #E69A34;
+    --accent-vtuber: #3F8F86;
+    --accent-neutral:#6C63A6;
+
+    --btn-bg:   var(--ink);
+    --btn-text: var(--paper);
+
+    --radius: 14px;
+    --gap: 16px;
+  }
+
+  html.dark{
+    --paper:      #15202B;
+    --paper-soft: #1C2733;
+    --ink:        #EDEBE5;
+    --hint:       #8FA0AD;
+    --line:       rgba(237,235,229,0.14);
+
+    --accent-art:    #EA7488;
+    --accent-chibi:  #F0AE5A;
+    --accent-vtuber: #5FB0A6;
+    --accent-neutral:#9089C9;
+
+    --btn-bg:   var(--ink);
+    --btn-text: var(--paper);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope', system-ui, sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+    transition:background .25s ease, color .25s ease;
+  }
+
+  .wrap{
+    max-width:520px;
+    margin:0 auto;
+    padding:0 18px;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding-top: calc(28px + env(safe-area-inset-top));
+    padding-bottom:22px;
+    text-align:center;
+    overflow:hidden;
+  }
+  .hero-stroke{
+    position:absolute;
+    top: -10px; left:50%;
+    transform:translateX(-50%);
+    width:220px; height:120px;
+    opacity:.55;
+    pointer-events:none;
+  }
+  .hero-stroke path{
+    fill:none;
+    stroke:var(--accent-art);
+    stroke-width:14;
+    stroke-linecap:round;
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+    animation: draw 1.1s ease-out .1s forwards;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hero-stroke path{ animation:none; stroke-dashoffset:0; }
+  }
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+
+  .hero h1{
+    position:relative;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(26px,7vw,32px);
+    letter-spacing:-0.01em;
+    margin:0 0 8px;
+  }
+  .hero p.sub{
+    position:relative;
+    margin:0;
+    color:var(--hint);
+    font-size:14.5px;
+  }
+  .hero p.sub a{
+    color:var(--accent-vtuber);
+    font-weight:700;
+    text-decoration:none;
+    border-bottom:1.5px solid currentColor;
+  }
+
+  /* ---------- SECTIONS (details/summary) ---------- */
+  .sections{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:8px;
+  }
+
+  details.card{
+    background:var(--paper-soft);
+    border-radius:var(--radius);
+    border:1px solid var(--line);
+    overflow:hidden;
+  }
+  details.card > summary{
+    list-style:none;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:16px 16px;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+  }
+  details.card > summary::-webkit-details-marker{ display:none; }
+
+  .swatch{
+    width:5px;
+    align-self:stretch;
+    border-radius:6px;
+    flex:0 0 auto;
+  }
+  .icon-wrap{
+    flex:0 0 auto;
+    width:34px;height:34px;
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon-wrap svg{ width:19px;height:19px; }
+
+  .summary-title{
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .summary-title strong{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:16.5px;
+    line-height:1.2;
+  }
+  .summary-title span{
+    font-size:12.5px;
+    color:var(--hint);
+  }
+
+  .chevron{
+    flex:0 0 auto;
+    width:18px;height:18px;
+    transition:transform .25s ease;
+    color:var(--hint);
+  }
+  details[open] .chevron{ transform:rotate(180deg); }
+
+  .card-body{
+    padding:0 16px 18px 16px;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+
+  /* ---------- PRICE TABLE ---------- */
+  .price-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  .price-table th,
+  .price-table td{
+    padding:8px 6px;
+    text-align:center;
+  }
+  .price-table th{
+    color:var(--hint);
+    font-weight:600;
+    font-size:11.5px;
+    text-transform:none;
+    border-bottom:1px solid var(--line);
+  }
+  .price-table td:first-child,
+  .price-table th:first-child{
+    text-align:left;
+    font-weight:600;
+  }
+  .price-table tbody tr + tr td{
+    border-top:1px solid var(--line);
+  }
+  .price-table td.price{
+    font-family:'Manrope',sans-serif;
+    font-weight:700;
+  }
+  .price-table td.dash{
+    color:var(--hint);
+  }
+
+  .extra-list{
+    margin:14px 0 0;
+    padding:0;
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .extra-list li{
+    font-size:13.5px;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    color:var(--ink);
+  }
+  .extra-list li b{ font-weight:700; white-space:nowrap; }
+  .extra-list li span.label{ color:var(--hint); }
+
+  /* ---------- SIMPLE LIST SECTIONS (vtuber, terms, payment) ---------- */
+  .plain-list{
+    margin:0;
+    padding:0;
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .plain-list li{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    font-size:14px;
+    padding-bottom:9px;
+    border-bottom:1px dashed var(--line);
+  }
+  .plain-list li:last-child{ border-bottom:none; padding-bottom:0; }
+  .plain-list li b{
+    font-weight:800;
+    font-size:14.5px;
+    white-space:nowrap;
+    font-family:'Manrope',sans-serif;
+  }
+  .plain-list li .label{ color:var(--ink); }
+
+  .note{
+    margin:14px 0 0;
+    padding:10px 12px;
+    background:var(--paper);
+    border-radius:10px;
+    font-size:13px;
+    color:var(--hint);
+    font-style:italic;
+  }
+
+  .toyhouse-text{
+    margin:0;
+    font-size:14px;
+    color:var(--ink);
+  }
+
+  /* ---------- GALLERY (примеры работ) ---------- */
+  .gallery-label{
+    margin:0 0 8px;
+    font-size:12px;
+    font-weight:700;
+    color:var(--hint);
+  }
+  .gallery{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding:2px 2px 14px;
+    margin:0 0 2px;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+  }
+  .gallery::-webkit-scrollbar{ height:0; }
+  .gallery-item{
+    position:relative;
+    flex:0 0 auto;
+    width:104px;
+    height:104px;
+    border-radius:12px;
+    overflow:hidden;
+    background:var(--paper);
+    border:1px solid var(--line);
+    scroll-snap-align:start;
+    cursor:pointer;
+  }
+  .gallery-item img,
+  .gallery-item video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .play-badge{
+    position:absolute;
+    right:6px; bottom:6px;
+    width:22px; height:22px;
+    border-radius:50%;
+    background:rgba(10,8,12,.6);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .play-badge svg{ width:10px; height:10px; fill:#fff; }
+  .gif-badge{
+    position:absolute;
+    left:6px; bottom:6px;
+    font-size:9.5px;
+    font-weight:800;
+    letter-spacing:.02em;
+    color:#fff;
+    background:rgba(10,8,12,.6);
+    padding:2px 6px;
+    border-radius:6px;
+  }
+
+  /* ---------- LIGHTBOX ---------- */
+  .lightbox{
+    position:fixed; inset:0;
+    background:rgba(10,8,12,.94);
+    z-index:999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .lightbox.open{ opacity:1; pointer-events:auto; }
+  .lightbox-media{
+    max-width:100%;
+    max-height:78vh;
+    border-radius:12px;
+    display:block;
+  }
+  .lightbox-close{
+    position:absolute;
+    top:calc(16px + env(safe-area-inset-top));
+    right:16px;
+    width:38px; height:38px;
+    border-radius:50%;
+    border:none;
+    background:rgba(255,255,255,.12);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .lightbox-close svg{ width:18px; height:18px; }
+  .lightbox-nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:40px; height:40px;
+    border-radius:50%;
+    border:none;
+    background:rgba(255,255,255,.12);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .lightbox-nav svg{ width:18px; height:18px; }
+  .lightbox-prev{ left:12px; }
+  .lightbox-next{ right:12px; }
+  .badge-soon{
+    display:inline-block;
+    margin-left:8px;
+    font-size:10.5px;
+    padding:2px 8px;
+    border-radius:20px;
+    background:var(--accent-neutral);
+    color:#fff;
+    font-weight:700;
+    vertical-align:middle;
+  }
+
+  /* ---------- FOOTER ---------- */
+  .footer{
+    margin-top:26px;
+    padding:18px 4px 6px;
+    text-align:center;
+    color:var(--hint);
+    font-size:13px;
+  }
+  .footer a{
+    color:var(--accent-vtuber);
+    font-weight:700;
+    text-decoration:none;
+  }
+  .footer p{ margin:4px 0; }
+
+  /* ---------- STICKY CTA ---------- */
+  .cta-bar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top, var(--paper) 60%, transparent);
+  }
+  .cta-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    max-width:520px;
+    margin:0 auto;
+    padding:14px 18px;
+    border:none;
+    border-radius:999px;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    font-family:'Manrope',sans-serif;
+    font-weight:800;
+    font-size:15.5px;
+    cursor:pointer;
+    transition:transform .12s ease;
+  }
+  .cta-btn:active{ transform:scale(.97); }
+  .cta-btn svg{ width:18px;height:18px; }
+
+  /* ---------- EXAMPLES UNDER PRICE ---------- */
+  .examples{
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+  }
+  .gallery-label{
+    margin:0 0 9px;
+  }
+  .gallery-item{
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .gallery-item:active{ transform:scale(.97); }
+  @media (hover:hover){
+    .gallery-item:hover{
+      transform:translateY(-2px);
+      box-shadow:0 7px 18px rgba(0,0,0,.10);
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ===================== HERO ===================== -->
+  <header class="hero">
+    <svg class="hero-stroke" viewBox="0 0 220 120" aria-hidden="true">
+      <path d="M14 90 C 40 30, 90 10, 120 45 S 190 95, 205 55"/>
+    </svg>
+    <h1>🎨 Прайс-лист (кратко)</h1>
+    <p class="sub">Заказы → <a href="https://t.me/example_artist" id="topLink">@example_artist</a></p>
+  </header>
+
+  <!-- ===================== SECTIONS ===================== -->
+  <main class="sections">
+
+    <!-- 1. АРТЫ -->
+    <details class="card" id="cat-art" open>
+      <summary>
+        <span class="swatch" style="background:var(--accent-art)"></span>
+        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-art) 18%, transparent); color:var(--accent-art)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C6.5 2 2 5.9 2 11c0 3.9 3.6 6.5 7.7 6.9.4 0 .7.3.7.7v.4c0 .8.9 1.3 1.6.9 3.3-1.9 9.9-6 9.9-12 0-3-4.4-6-9.9-6z"/>
+            <circle cx="7.3" cy="10" r="1.1" fill="currentColor" stroke="none"/>
+            <circle cx="10.5" cy="6.6" r="1.1" fill="currentColor" stroke="none"/>
+            <circle cx="15.2" cy="7.4" r="1.1" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="summary-title">
+          <strong>Арты (полноценные)</strong>
+          <span>Голова · по плечи · по пояс · рост</span>
+        </span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="card-body">
+        <table class="price-table">
+          <thead>
+            <tr><th>Ракурс</th><th>Без рендера</th><th>Простой</th><th>Сложный</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Голова</td><td class="price">300</td><td class="price">450</td><td class="price">600</td></tr>
+            <tr><td>По плечи</td><td class="price">500</td><td class="price">700</td><td class="price">900</td></tr>
+            <tr><td>По пояс</td><td class="price">700</td><td class="price">900</td><td class="price">1100</td></tr>
+            <tr><td>Полный рост</td><td class="dash">—</td><td class="dash">—</td><td class="price">1400</td></tr>
+          </tbody>
+        </table>
+        <ul class="extra-list">
+          <li><span class="label">Фон</span><b>от 150 ₽ (по сложности)</b></li>
+          <li><span class="label">Деталей больше 5</span><b>+200 ₽</b></li>
+        </ul>
+
+        <div class="examples">
+          <p class="gallery-label">✦ Примеры — чтобы сразу было видно, что входит в цену</p>
+          <div class="gallery" data-gallery="art"></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- 2. ЧИБИ -->
+    <details class="card" id="cat-chibi">
+      <summary>
+        <span class="swatch" style="background:var(--accent-chibi)"></span>
+        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-chibi) 18%, transparent); color:var(--accent-chibi)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="9" r="5.3"/>
+            <path d="M9.6 8.8c0-.5.4-.9.9-.9M14.4 8.8c0 .5-.4.9-.9.9"/>
+            <path d="M9.6 11.2c.7.7 3.1.7 3.8 0" stroke-width="1.6"/>
+            <path d="M6 21c0-3 2.7-4.6 6-4.6s6 1.6 6 4.6"/>
+          </svg>
+        </span>
+        <span class="summary-title">
+          <strong>Чиби</strong>
+          <span>Голова · по плечи · по пояс · рост</span>
+        </span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="card-body">
+        <table class="price-table">
+          <thead>
+            <tr><th>Ракурс</th><th>Без рендера</th><th>Простой</th><th>Сложный</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Голова</td><td class="price">100</td><td class="price">130</td><td class="price">160</td></tr>
+            <tr><td>По плечи</td><td class="price">130</td><td class="price">160</td><td class="price">190</td></tr>
+            <tr><td>По пояс</td><td class="price">160</td><td class="price">180</td><td class="price">210</td></tr>
+            <tr><td>Полный рост</td><td class="price">180</td><td class="price">200</td><td class="price">220</td></tr>
+          </tbody>
+        </table>
+        <ul class="extra-list">
+          <li><span class="label">Полноценный чиби с простым рендером</span><b>200 ₽</b></li>
+        </ul>
+
+        <div class="examples">
+          <p class="gallery-label">✦ Примеры работ</p>
+          <div class="gallery" data-gallery="chibi"></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- 3. ВИТУБЕР-МОДЕЛИ -->
+    <details class="card" id="cat-vtuber">
+      <summary>
+        <span class="swatch" style="background:var(--accent-vtuber)"></span>
+        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-vtuber) 18%, transparent); color:var(--accent-vtuber)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="12" rx="2"/>
+            <path d="M8 20h8M12 16v4"/>
+          </svg>
+        </span>
+        <span class="summary-title">
+          <strong>Vtuber-модели</strong>
+          <span>Дизайн · PSD · ригг · пакеты</span>
+        </span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="card-body">
+        <ul class="plain-list">
+          <li><span class="label">Дизайн (образ)</span><b>1400 ₽</b></li>
+          <li><span class="label">PSD (подготовка слоёв)</span><b>1400 ₽</b></li>
+          <li><span class="label">Ригг (анимация)</span><b>1400 ₽</b></li>
+          <li><span class="label">Полный пакет (всё вместе)</span><b>4200 ₽</b></li>
+          <li><span class="label">Дизайн + PSD (без ригга)</span><b>2800 ₽</b></li>
+        </ul>
+        <ul class="extra-list">
+          <li><span class="label">Эмоции</span><b>+100 ₽ за каждую</b></li>
+          <li><span class="label">Деталей больше 5</span><b>+200 ₽</b></li>
+        </ul>
+
+        <div class="examples">
+          <p class="gallery-label">✦ Примеры моделей</p>
+          <div class="gallery" data-gallery="vtuber"></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- 4. СРОКИ И СЛОТЫ -->
+    <details class="card">
+      <summary>
+        <span class="swatch" style="background:var(--accent-neutral)"></span>
+        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-neutral) 18%, transparent); color:var(--accent-neutral)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="8.5"/>
+            <path d="M12 8v4l3 2"/>
+          </svg>
+        </span>
+        <span class="summary-title">
+          <strong>Сроки и слоты</strong>
+          <span>Сколько мест и как долго</span>
+        </span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="card-body">
+        <ul class="plain-list">
+          <li><span class="label">Слотов на арты</span><b>5 в месяц</b></li>
+          <li><span class="label">Слотов на модели</span><b>1 в месяц</b></li>
+          <li><span class="label">Срок арта</span><b>1–2 недели</b></li>
+          <li><span class="label">Срок модели</span><b>до 2 месяцев</b></li>
+        </ul>
+        <p class="note">«Если задерживаю — предупреждаю за 2–3 дня.»</p>
+      </div>
+    </details>
+
+    <!-- 5. ОПЛАТА -->
+    <details class="card">
+      <summary>
+        <span class="swatch" style="background:var(--accent-chibi)"></span>
+        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-chibi) 18%, transparent); color:var(--accent-chibi)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="6" width="18" height="13" rx="2.2"/>
+            <path d="M3 10h18"/>
+            <circle cx="16.5" cy="14.3" r="1.1" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="summary-title">
+          <strong>Оплата</strong>
+          <span>Предоплата и остаток</span>
+        </span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="card-body">
+        <ul class="plain-list">
+          <li><span class="label">Предоплата</span><b>30%</b></li>
+          <li><span class="label">Остаток</span><b>после готовности</b></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- 6. TOYHOUSE -->
+    <details class="card" id="cat-toyhouse">
+      <summary>
+        <span class="swatch" style="background:var(--accent-art)"></span>
+        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-art) 18%, transparent); color:var(--accent-art)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3.5l2.5 5.2 5.7.6-4.2 3.9 1.2 5.6L12 15.9l-5.2 2.9 1.2-5.6-4.2-3.9 5.7-.6z"/>
+          </svg>
+        </span>
+        <span class="summary-title">
+          <strong>Toyhouse<span class="badge-soon">скоро</span></strong>
+          <span>Галерея готовых чиби</span>
+        </span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="card-body">
+        <p class="toyhouse-text">Готовые чиби — можно купить или выиграть. Если не купят сразу, остаются в галерее.</p>
+
+        <div class="examples">
+          <p class="gallery-label">✦ Примеры готовых работ</p>
+          <div class="gallery" data-gallery="toyhouse"></div>
+        </div>
+      </div>
+    </details>
+
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer">
+    <p>📩 По всем вопросам → <a href="https://t.me/example_artist" id="footerLink">@example_artist</a></p>
+    <p>Примеры работ — в закреплённых сообщениях канала.</p>
+  </footer>
+
+</div>
+
+<!-- ===================== STICKY CTA ===================== -->
+<div class="cta-bar">
+  <button class="cta-btn" id="ctaBtn" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+    </svg>
+    Написать художнику
+  </button>
+</div>
+
+<!-- ===================== LIGHTBOX (полноэкранный просмотр) ===================== -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Закрыть">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev" type="button" aria-label="Предыдущее">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div id="lightboxMedia"></div>
+  <button class="lightbox-nav lightbox-next" id="lightboxNext" type="button" aria-label="Следующее">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+</div>
+
+<script>
+  /* =========================================================
+     НАСТРОЙКА: замени username на актуальный аккаунт художника.
+     Меняется тут в ОДНОМ месте — подтянется и в шапку,
+     и в подвал, и в кнопку.
+     ========================================================= */
+  const ARTIST_USERNAME = "example_artist"; // без @
+
+  /* =========================================================
+     ПРИМЕРЫ РАБОТ (галереи внутри категорий)
+     — Впиши свои ссылки вместо плейсхолдеров. Каждый элемент:
+         { type: "image", src: "ссылка на jpg/png/webp" }
+         { type: "gif",   src: "ссылка на .gif" }
+         { type: "video", src: "ссылка на .mp4", poster: "ссылка на превью-картинку (необязательно)" }
+     — Ссылки можно брать откуда угодно: из своего же репозитория
+       на GitHub (рядом с этим файлом), из Telegraph, Imgur и т.д.
+       Главное — чтобы ссылка вела напрямую на файл.
+     — Пустой массив [] — галерея у категории просто не покажется.
+     ========================================================= */
+  const MEDIA = {
+    art: [
+      { type: "image", src: placeholderSVG("Арт · пример 1", "#E2566F") },
+      { type: "image", src: placeholderSVG("Арт · пример 2", "#E2566F") },
+      { type: "image", src: placeholderSVG("Арт · пример 3", "#E2566F") }
+    ],
+    chibi: [
+      { type: "image", src: placeholderSVG("Чиби · пример 1", "#E69A34") },
+      { type: "image", src: placeholderSVG("Чиби · пример 2", "#E69A34") }
+    ],
+    vtuber: [
+      { type: "image", src: placeholderSVG("Модель · пример 1", "#3F8F86") },
+      { type: "image", src: placeholderSVG("Модель · пример 2", "#3F8F86") }
+    ],
+    toyhouse: [
+      { type: "image", src: placeholderSVG("Toyhouse · пример", "#E2566F") }
+    ]
+  };
+
+  // Генератор картинки-заглушки (data URI, без внешних запросов) —
+  // просто чтобы страница выглядела живой ещё до того, как вставишь
+  // реальные ссылки. Можно смело удалять после замены MEDIA выше.
+  function placeholderSVG(label, color) {
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">' +
+      '<rect width="220" height="220" fill="' + color + '" opacity="0.16"/>' +
+      '<circle cx="110" cy="88" r="30" fill="' + color + '" opacity="0.35"/>' +
+      '<text x="110" y="150" font-family="sans-serif" font-size="13" fill="' + color + '" text-anchor="middle">' + label + '</text>' +
+      '</svg>';
+    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+  }
+
+  const tg = window.Telegram ? window.Telegram.WebApp : null;
+
+  function applyTelegramTheme() {
+    if (!tg) return;
+    tg.ready();
+    tg.expand();
+
+    const root = document.documentElement;
+    const isDark = tg.colorScheme === "dark";
+    root.classList.toggle("dark", isDark);
+
+    // Подтягиваем реальные цвета темы пользователя, если Telegram их отдал.
+    const tp = tg.themeParams || {};
+    if (tp.bg_color)        root.style.setProperty("--paper", tp.bg_color);
+    if (tp.secondary_bg_color) root.style.setProperty("--paper-soft", tp.secondary_bg_color);
+    if (tp.text_color)      root.style.setProperty("--ink", tp.text_color);
+    if (tp.hint_color)      root.style.setProperty("--hint", tp.hint_color);
+
+    if (tg.setHeaderColor) {
+      try { tg.setHeaderColor(isDark ? "secondary_bg_color" : "bg_color"); } catch (e) {}
+    }
+  }
+
+  function setupContactLinks() {
+    const url = "https://t.me/" + ARTIST_USERNAME;
+    const handle = "@" + ARTIST_USERNAME;
+
+    document.querySelectorAll("#topLink, #footerLink").forEach(function (a) {
+      a.href = url;
+      a.textContent = handle;
+    });
+
+    document.getElementById("ctaBtn").addEventListener("click", function () {
+      if (tg && tg.openTelegramLink) {
+        tg.openTelegramLink(url);
+      } else {
+        window.open(url, "_blank");
+      }
+    });
+  }
+
+  // Разрешаем открывать только один раздел удобства ради (не обязательно,
+  // но на маленьком экране так спокойнее) — при открытии нового закрываем остальные.
+  function setupAccordion() {
+    const items = document.querySelectorAll("details.card");
+    items.forEach(function (item) {
+      item.addEventListener("toggle", function () {
+        if (item.open) {
+          items.forEach(function (other) {
+            if (other !== item) other.open = false;
+          });
+        }
+      });
+    });
+  }
+
+
+  /* =========================================================
+     ГАЛЕРЕИ ПОД ЦЕНАМИ
+     — Картинки автоматически появляются под прайсом.
+     — Нажатие открывает большую картинку/видео.
+     ========================================================= */
+  function renderGalleries() {
+    document.querySelectorAll(".gallery[data-gallery]").forEach(function(gallery) {
+      const key = gallery.dataset.gallery;
+      const items = MEDIA[key] || [];
+      if (!items.length) {
+        gallery.parentElement.style.display = "none";
+        return;
+      }
+
+      gallery.innerHTML = "";
+
+      items.forEach(function(item, index) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "gallery-item";
+        button.setAttribute("aria-label", "Открыть пример " + (index + 1));
+
+        if (item.type === "video") {
+          const video = document.createElement("video");
+          video.src = item.src;
+          video.muted = true;
+          video.playsInline = true;
+          video.preload = "metadata";
+          if (item.poster) video.poster = item.poster;
+          button.appendChild(video);
+
+          const badge = document.createElement("span");
+          badge.className = "play-badge";
+          badge.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+          button.appendChild(badge);
+        } else {
+          const img = document.createElement("img");
+          img.src = item.src;
+          img.alt = key + " — пример " + (index + 1);
+          img.loading = "lazy";
+          button.appendChild(img);
+
+          if (item.type === "gif") {
+            const badge = document.createElement("span");
+            badge.className = "gif-badge";
+            badge.textContent = "GIF";
+            button.appendChild(badge);
+          }
+        }
+
+        button.addEventListener("click", function() {
+          openLightbox(items, index);
+        });
+        gallery.appendChild(button);
+      });
+    });
+  }
+
+  let lightboxItems = [];
+  let lightboxIndex = 0;
+
+  function openLightbox(items, index) {
+    lightboxItems = items;
+    lightboxIndex = index;
+    document.getElementById("lightbox").classList.add("open");
+    document.body.style.overflow = "hidden";
+    updateLightbox();
+  }
+
+  function updateLightbox() {
+    const box = document.getElementById("lightboxMedia");
+    const item = lightboxItems[lightboxIndex];
+    if (!item) return;
+
+    box.innerHTML = "";
+
+    if (item.type === "video") {
+      const video = document.createElement("video");
+      video.className = "lightbox-media";
+      video.src = item.src;
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      if (item.poster) video.poster = item.poster;
+      box.appendChild(video);
+    } else {
+      const img = document.createElement("img");
+      img.className = "lightbox-media";
+      img.src = item.src;
+      img.alt = "Пример работы";
+      box.appendChild(img);
+    }
+  }
+
+  function closeLightbox() {
+    document.getElementById("lightbox").classList.remove("open");
+    document.body.style.overflow = "";
+    document.getElementById("lightboxMedia").innerHTML = "";
+  }
+
+  document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+
+  document.getElementById("lightboxPrev").addEventListener("click", function() {
+    if (!lightboxItems.length) return;
+    lightboxIndex = (lightboxIndex - 1 + lightboxItems.length) % lightboxItems.length;
+    updateLightbox();
+  });
+
+  document.getElementById("lightboxNext").addEventListener("click", function() {
+    if (!lightboxItems.length) return;
+    lightboxIndex = (lightboxIndex + 1) % lightboxItems.length;
+    updateLightbox();
+  });
+
+  document.getElementById("lightbox").addEventListener("click", function(e) {
+    if (e.target === this) closeLightbox();
+  });
+
+  document.addEventListener("keydown", function(e) {
+    if (!document.getElementById("lightbox").classList.contains("open")) return;
+    if (e.key === "Escape") closeLightbox();
+    if (e.key === "ArrowLeft") document.getElementById("lightboxPrev").click();
+    if (e.key === "ArrowRight") document.getElementById("lightboxNext").click();
+  });
+
+  renderGalleries();
+  applyTelegramTheme();
+  if (tg && tg.onEvent) {
+    tg.onEvent("themeChanged", applyTelegramTheme);
+  }
+  setupContactLinks();
+  setupAccordion();
+</script>
+
+</body>
+</html>
