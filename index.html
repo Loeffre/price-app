@@ -18,38 +18,24 @@
        но яркость чуть гасится в тёмном режиме через .dark
      ========================================================= */
   :root{
-    --paper:      #FAF6F0;
-    --paper-soft: #F1EBE0;
-    --ink:        #2B2530;
-    --hint:       #8A8290;
-    --line:       rgba(43,37,48,0.12);
+    /* фирменная палитра */
+    --paper:      #010D1F; /* тёмный фон */
+    --paper-soft: #0B1B33; /* чуть светлее фона — для карточек */
+    --ink:        #EAEBEF; /* основной текст */
+    --hint:       #D8D7CD; /* приглушённый текст */
+    --line:       rgba(234,235,239,0.12);
 
-    --accent-art:    #E2566F;
-    --accent-chibi:  #E69A34;
-    --accent-vtuber: #3F8F86;
-    --accent-neutral:#6C63A6;
+    --accent:        #3390BC;
+    --accent-art:    #3390BC;
+    --accent-chibi:  #3390BC;
+    --accent-vtuber: #3390BC;
+    --accent-neutral:#3390BC;
 
-    --btn-bg:   var(--ink);
-    --btn-text: var(--paper);
+    --btn-bg:   var(--accent);
+    --btn-text: #010D1F;
 
     --radius: 14px;
     --gap: 16px;
-  }
-
-  html.dark{
-    --paper:      #15202B;
-    --paper-soft: #1C2733;
-    --ink:        #EDEBE5;
-    --hint:       #8FA0AD;
-    --line:       rgba(237,235,229,0.14);
-
-    --accent-art:    #EA7488;
-    --accent-chibi:  #F0AE5A;
-    --accent-vtuber: #5FB0A6;
-    --accent-neutral:#9089C9;
-
-    --btn-bg:   var(--ink);
-    --btn-text: var(--paper);
   }
 
   *{box-sizing:border-box;}
@@ -79,28 +65,6 @@
     text-align:center;
     overflow:hidden;
   }
-  .hero-stroke{
-    position:absolute;
-    top: -10px; left:50%;
-    transform:translateX(-50%);
-    width:220px; height:120px;
-    opacity:.55;
-    pointer-events:none;
-  }
-  .hero-stroke path{
-    fill:none;
-    stroke:var(--accent-art);
-    stroke-width:14;
-    stroke-linecap:round;
-    stroke-dasharray: 420;
-    stroke-dashoffset: 420;
-    animation: draw 1.1s ease-out .1s forwards;
-  }
-  @media (prefers-reduced-motion: reduce){
-    .hero-stroke path{ animation:none; stroke-dashoffset:0; }
-  }
-  @keyframes draw{ to{ stroke-dashoffset:0; } }
-
   .hero h1{
     position:relative;
     font-family:'Fraunces', serif;
@@ -148,19 +112,12 @@
   }
   details.card > summary::-webkit-details-marker{ display:none; }
 
-  .swatch{
-    width:5px;
-    align-self:stretch;
-    border-radius:6px;
-    flex:0 0 auto;
-  }
   .icon-wrap{
     flex:0 0 auto;
     width:34px;height:34px;
-    border-radius:10px;
-    display:flex;align-items:center;justify-content:center;
+    border-radius:8px;
+    background:var(--accent);
   }
-  .icon-wrap svg{ width:19px;height:19px; }
 
   .summary-title{
     flex:1 1 auto;
@@ -476,9 +433,6 @@
 
   <!-- ===================== HERO ===================== -->
   <header class="hero">
-    <svg class="hero-stroke" viewBox="0 0 220 120" aria-hidden="true">
-      <path d="M14 90 C 40 30, 90 10, 120 45 S 190 95, 205 55"/>
-    </svg>
     <h1>🎨 Прайс-лист (кратко)</h1>
     <p class="sub">Заказы → <a href="https://t.me/example_artist" id="topLink">@example_artist</a></p>
   </header>
@@ -489,15 +443,7 @@
     <!-- 1. АРТЫ -->
     <details class="card" id="cat-art" open>
       <summary>
-        <span class="swatch" style="background:var(--accent-art)"></span>
-        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-art) 18%, transparent); color:var(--accent-art)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2C6.5 2 2 5.9 2 11c0 3.9 3.6 6.5 7.7 6.9.4 0 .7.3.7.7v.4c0 .8.9 1.3 1.6.9 3.3-1.9 9.9-6 9.9-12 0-3-4.4-6-9.9-6z"/>
-            <circle cx="7.3" cy="10" r="1.1" fill="currentColor" stroke="none"/>
-            <circle cx="10.5" cy="6.6" r="1.1" fill="currentColor" stroke="none"/>
-            <circle cx="15.2" cy="7.4" r="1.1" fill="currentColor" stroke="none"/>
-          </svg>
-        </span>
+        <span class="icon-wrap"></span>
         <span class="summary-title">
           <strong>Арты (полноценные)</strong>
           <span>Голова · по плечи · по пояс · рост</span>
@@ -531,15 +477,7 @@
     <!-- 2. ЧИБИ -->
     <details class="card" id="cat-chibi">
       <summary>
-        <span class="swatch" style="background:var(--accent-chibi)"></span>
-        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-chibi) 18%, transparent); color:var(--accent-chibi)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="9" r="5.3"/>
-            <path d="M9.6 8.8c0-.5.4-.9.9-.9M14.4 8.8c0 .5-.4.9-.9.9"/>
-            <path d="M9.6 11.2c.7.7 3.1.7 3.8 0" stroke-width="1.6"/>
-            <path d="M6 21c0-3 2.7-4.6 6-4.6s6 1.6 6 4.6"/>
-          </svg>
-        </span>
+        <span class="icon-wrap"></span>
         <span class="summary-title">
           <strong>Чиби</strong>
           <span>Голова · по плечи · по пояс · рост</span>
@@ -572,13 +510,7 @@
     <!-- 3. ВИТУБЕР-МОДЕЛИ -->
     <details class="card" id="cat-vtuber">
       <summary>
-        <span class="swatch" style="background:var(--accent-vtuber)"></span>
-        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-vtuber) 18%, transparent); color:var(--accent-vtuber)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="12" rx="2"/>
-            <path d="M8 20h8M12 16v4"/>
-          </svg>
-        </span>
+        <span class="icon-wrap"></span>
         <span class="summary-title">
           <strong>Vtuber-модели</strong>
           <span>Дизайн · PSD · ригг · пакеты</span>
@@ -608,13 +540,7 @@
     <!-- 4. СРОКИ И СЛОТЫ -->
     <details class="card">
       <summary>
-        <span class="swatch" style="background:var(--accent-neutral)"></span>
-        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-neutral) 18%, transparent); color:var(--accent-neutral)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="8.5"/>
-            <path d="M12 8v4l3 2"/>
-          </svg>
-        </span>
+        <span class="icon-wrap"></span>
         <span class="summary-title">
           <strong>Сроки и слоты</strong>
           <span>Сколько мест и как долго</span>
@@ -635,14 +561,7 @@
     <!-- 5. ОПЛАТА -->
     <details class="card">
       <summary>
-        <span class="swatch" style="background:var(--accent-chibi)"></span>
-        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-chibi) 18%, transparent); color:var(--accent-chibi)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="6" width="18" height="13" rx="2.2"/>
-            <path d="M3 10h18"/>
-            <circle cx="16.5" cy="14.3" r="1.1" fill="currentColor" stroke="none"/>
-          </svg>
-        </span>
+        <span class="icon-wrap"></span>
         <span class="summary-title">
           <strong>Оплата</strong>
           <span>Предоплата и остаток</span>
@@ -660,12 +579,7 @@
     <!-- 6. TOYHOUSE -->
     <details class="card" id="cat-toyhouse">
       <summary>
-        <span class="swatch" style="background:var(--accent-art)"></span>
-        <span class="icon-wrap" style="background:color-mix(in srgb, var(--accent-art) 18%, transparent); color:var(--accent-art)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3.5l2.5 5.2 5.7.6-4.2 3.9 1.2 5.6L12 15.9l-5.2 2.9 1.2-5.6-4.2-3.9 5.7-.6z"/>
-          </svg>
-        </span>
+        <span class="icon-wrap"></span>
         <span class="summary-title">
           <strong>Toyhouse<span class="badge-soon">скоро</span></strong>
           <span>Галерея готовых чиби</span>
@@ -736,36 +650,24 @@
      — Пустой массив [] — галерея у категории просто не покажется.
      ========================================================= */
   const MEDIA = {
+    // Вставляй ссылки на свои картинки/видео вместо примеров ниже.
+    // { type: "image", src: "https://..." }              — картинка (jpg/png/webp)
+    // { type: "gif",   src: "https://....gif" }           — гифка
+    // { type: "video", src: "https://....mp4", poster: "https://..." } — видео (poster необязателен)
+    // Пустой массив [] — галерея у категории просто не покажется.
     art: [
-      { type: "image", src: placeholderSVG("Арт · пример 1", "#E2566F") },
-      { type: "image", src: placeholderSVG("Арт · пример 2", "#E2566F") },
-      { type: "image", src: placeholderSVG("Арт · пример 3", "#E2566F") }
+      // { type: "image", src: "https://example.com/art1.jpg" },
     ],
     chibi: [
-      { type: "image", src: placeholderSVG("Чиби · пример 1", "#E69A34") },
-      { type: "image", src: placeholderSVG("Чиби · пример 2", "#E69A34") }
+      // { type: "image", src: "https://example.com/chibi1.jpg" },
     ],
     vtuber: [
-      { type: "image", src: placeholderSVG("Модель · пример 1", "#3F8F86") },
-      { type: "image", src: placeholderSVG("Модель · пример 2", "#3F8F86") }
+      // { type: "image", src: "https://example.com/vtuber1.jpg" },
     ],
     toyhouse: [
-      { type: "image", src: placeholderSVG("Toyhouse · пример", "#E2566F") }
+      // { type: "image", src: "https://example.com/toyhouse1.jpg" },
     ]
   };
-
-  // Генератор картинки-заглушки (data URI, без внешних запросов) —
-  // просто чтобы страница выглядела живой ещё до того, как вставишь
-  // реальные ссылки. Можно смело удалять после замены MEDIA выше.
-  function placeholderSVG(label, color) {
-    const svg =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">' +
-      '<rect width="220" height="220" fill="' + color + '" opacity="0.16"/>' +
-      '<circle cx="110" cy="88" r="30" fill="' + color + '" opacity="0.35"/>' +
-      '<text x="110" y="150" font-family="sans-serif" font-size="13" fill="' + color + '" text-anchor="middle">' + label + '</text>' +
-      '</svg>';
-    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
-  }
 
   const tg = window.Telegram ? window.Telegram.WebApp : null;
 
@@ -773,20 +675,9 @@
     if (!tg) return;
     tg.ready();
     tg.expand();
-
-    const root = document.documentElement;
-    const isDark = tg.colorScheme === "dark";
-    root.classList.toggle("dark", isDark);
-
-    // Подтягиваем реальные цвета темы пользователя, если Telegram их отдал.
-    const tp = tg.themeParams || {};
-    if (tp.bg_color)        root.style.setProperty("--paper", tp.bg_color);
-    if (tp.secondary_bg_color) root.style.setProperty("--paper-soft", tp.secondary_bg_color);
-    if (tp.text_color)      root.style.setProperty("--ink", tp.text_color);
-    if (tp.hint_color)      root.style.setProperty("--hint", tp.hint_color);
-
+    // Цвета зафиксированы в CSS-переменных :root и не зависят от темы Telegram.
     if (tg.setHeaderColor) {
-      try { tg.setHeaderColor(isDark ? "secondary_bg_color" : "bg_color"); } catch (e) {}
+      try { tg.setHeaderColor("secondary_bg_color"); } catch (e) {}
     }
   }
 
